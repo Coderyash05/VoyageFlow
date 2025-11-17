@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoyageFlow - Interactive Travel Experience Simulator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary: #1e88e5;
+            --primary-dark: #1565c0;
+            --secondary: #ff6b6b;
+            --accent: #4ecdc4;
+            --light: #f5f7fa;
+            --dark: #333;
+            --gray: #6c757d;
+            --success: #4caf50;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e3f2fd 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* Page Container Styles */
+        .page {
+            display: none;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .active {
+            display: block;
+        }
+        
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            border-radius: 0 0 15px 15px;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23000000" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,186.7C384,213,480,235,576,213.3C672,192,768,128,864,128C960,128,1056,192,1152,192C1248,192,1344,128,1392,96L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            background-position: bottom;
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .tagline {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 1rem;
+        }
+        
+        /* Form Styles */
+        .form-container {
+            background: white;
+            border-radius: 15px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .form-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+        
+        .form-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .form-header h2 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-header p {
+            color: var(--gray);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+        
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.2);
+            outline: none;
+        }
+        
+        input.error {
+            border-color: var(--secondary);
+        }
+        
+        .error-message {
+            color: var(--secondary);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+        
+        button {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 10px rgba(30, 136, 229, 0.3);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(30, 136, 229, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        /* Navigation Styles */
+        .nav-tabs {
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-radius: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: var(--transition);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-tab:hover {
+            background: #e3f2fd;
+            color: var(--primary);
+        }
+        
+        .nav-tab.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 10px rgba(30, 136, 229, 0.3);
+        }
+        
+        /* Blog Section Styles */
+        .blog-section {
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        
+        .blog-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .blog-section h2 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #e3f2fd;
+            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .blog-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+        
+        .blog-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .blog-text {
+            line-height: 1.7;
+        }
+        
+        .blog-text p {
+            margin-bottom: 1rem;
+        }
+        
+        /* Testimonials Styles */
+        .testimonials {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .testimonials h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .testimonial {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .testimonial:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .testimonial-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        
+        .testimonial-content {
+            flex: 1;
+        }
+        
+        .testimonial-text {
+            font-style: italic;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+        
+        .testimonial-author {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .testimonial-rating {
+            color: #ffc107;
+            margin-top: 0.25rem;
+        }
+        
+        /* Calculator Styles */
+        .option-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        
+        .option-section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+        
+        .option-section h3 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .option-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            transition: var(--transition);
+        }
+        
+        .option-item:hover {
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .option-item:last-child {
+            border-bottom: none;
+        }
+        
+        .option-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .option-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e3f2fd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+        
+        .option-details h4 {
+            margin-bottom: 0.25rem;
+        }
+        
+        .option-details p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .option-price {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
+        }
+        
+        .price-display {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            margin: 2rem 0;
+            background: linear-gradient(135deg, #e3f2fd, #f8f9fa);
+            border: 2px dashed var(--primary);
+        }
+        
+        .price-display span {
+            color: var(--primary);
+            font-size: 2.5rem;
+        }
+        
+        /* Confirmation Page Styles */
+        .confirmation-content {
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .confirmation-content::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--accent), var(--secondary));
+        }
+        
+        .confirmation-icon {
+            font-size: 5rem;
+            color: var(--success);
+            margin-bottom: 1.5rem;
+            animation: bounce 1s ease;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-20px);}
+            60% {transform: translateY(-10px);}
+        }
+        
+        .confirmation-content h2 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .confirmation-content p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* Review Section Styles */
+        .review-section {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+        
+        .review-section h3 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 2rem;
+        }
+        
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .review-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            transition: var(--transition);
+        }
+        
+        .review-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.12);
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .reviewer {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .reviewer-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .reviewer-info h4 {
+            margin-bottom: 0.25rem;
+        }
+        
+        .reviewer-info p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .review-rating {
+            color: #ffc107;
+            font-size: 1.2rem;
+        }
+        
+        .review-text {
+            font-style: italic;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            animation: scaleIn 0.3s ease;
+        }
+        
+        @keyframes scaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .modal h2 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .modal p {
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        .modal button {
+            margin-top: 1rem;
+        }
+        
+        /* Utility Classes */
+        .text-center {
+            text-align: center;
+        }
+        
+        .mt-2 {
+            margin-top: 2rem;
+        }
+        
+        .mb-2 {
+            margin-bottom: 2rem;
+        }
+        
+        .flex {
+            display: flex;
+        }
+        
+        .justify-center {
+            justify-content: center;
+        }
+        
+        .align-center {
+            align-items: center;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .blog-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tabs {
+                flex-wrap: wrap;
+            }
+            
+            .reviews-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .form-container {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Page 1: Registration Form -->
+    <div id="page1" class="page active">
+        <header>
+            <div class="header-content">
+                <h1><i class="fas fa-globe-americas"></i> VoyageFlow</h1>
+                <p class="tagline">Your Journey Begins Here</p>
+            </div>
+        </header>
+        
+        <div class="form-container">
+            <div class="form-header">
+                <h2>Create Your Account</h2>
+                <p>Join thousands of travelers who trust VoyageFlow for their adventures</p>
+            </div>
+            <form id="registrationForm">
+                <div class="form-group">
+                    <label for="fullName"><i class="fas fa-user"></i> Full Name</label>
+                    <input type="text" id="fullName" placeholder="Enter your full name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email"><i class="fas fa-envelope"></i> Email Address</label>
+                    <input type="email" id="email" placeholder="your.email@example.com" required>
+                    <div class="error-message" id="emailError">Please enter a valid email address</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone"><i class="fas fa-phone"></i> Phone Number</label>
+                    <input type="tel" id="phone" placeholder="10-digit phone number" required>
+                    <div class="error-message" id="phoneError">Phone number must be exactly 10 digits</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="pincode"><i class="fas fa-map-marker-alt"></i> PIN Code</label>
+                    <input type="text" id="pincode" placeholder="6-digit PIN code" required>
+                    <div class="error-message" id="pincodeError">PIN code must be exactly 6 digits</div>
+                </div>
+                
+                <button type="submit" class="mt-2"><i class="fas fa-user-plus"></i> Create Account</button>
+            </form>
+        </div>
+        
+        <!-- Testimonials on Registration Page -->
+        <div class="review-section mt-2">
+            <h3>What Our Travelers Say</h3>
+            <div class="reviews-grid">
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer">
+                            <div class="reviewer-avatar">JS</div>
+                            <div class="reviewer-info">
+                                <h4>Jessica Smith</h4>
+                                <p>Travel Enthusiast</p>
+                            </div>
+                        </div>
+                        <div class="review-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <p class="review-text">"VoyageFlow made planning my European tour so simple! The itinerary suggestions were spot on."</p>
+                </div>
+                
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer">
+                            <div class="reviewer-avatar">MR</div>
+                            <div class="reviewer-info">
+                                <h4>Michael Rodriguez</h4>
+                                <p>Adventure Seeker</p>
+                            </div>
+                        </div>
+                        <div class="review-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                    </div>
+                    <p class="review-text">"The price calculator helped me stay within budget while still enjoying luxury experiences."</p>
+                </div>
+                
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer">
+                            <div class="reviewer-avatar">AP</div>
+                            <div class="reviewer-info">
+                                <h4>Amanda Patel</h4>
+                                <p>Family Traveler</p>
+                            </div>
+                        </div>
+                        <div class="review-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <p class="review-text">"As a mother of two, I appreciate how VoyageFlow considers family-friendly options in all their plans."</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Page 2: Travel Blog -->
+    <div id="page2" class="page">
+        <header>
+            <div class="header-content">
+                <h1><i class="fas fa-globe-americas"></i> VoyageFlow</h1>
+                <p class="tagline">Discover Amazing Destinations</p>
+            </div>
+        </header>
+        
+        <div class="nav-tabs">
+            <div class="nav-tab active" data-target="paris"><i class="fas fa-landmark"></i> Paris</div>
+            <div class="nav-tab" data-target="tokyo"><i class="fas fa-torii-gate"></i> Tokyo</div>
+            <div class="nav-tab" data-target="rome"><i class="fas fa-monument"></i> Rome</div>
+            <div class="nav-tab" data-target="bali"><i class="fas fa-umbrella-beach"></i> Bali</div>
+            <div class="nav-tab" data-target="newyork"><i class="fas fa-city"></i> New York</div>
+        </div>
+        
+        <div class="blog-content">
+            <!-- Paris Section -->
+            <div id="paris" class="blog-section">
+                <h2><i class="fas fa-landmark"></i> Paris - The City of Light</h2>
+                <div class="blog-image-placeholder" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 300px; border-radius: 10px; display: flex; justify-content: center; align-items: center; margin-bottom: 1rem; color: white; font-size: 1.5rem;">
+                    <span>Eiffel Tower & Parisian Streets</span>
+                </div>
+                <div class="blog-text">
+                    <p>Paris, France's capital, is a major European city and a global center for art, fashion, gastronomy and culture. Its 19th-century cityscape is crisscrossed by wide boulevards and the River Seine.</p>
+                    <p>Beyond such landmarks as the Eiffel Tower and the 12th-century, Gothic Notre-Dame cathedral, the city is known for its cafe culture and designer boutiques along the Rue du Faubourg Saint-Honoré.</p>
+                    
+                    <div class="testimonials">
+                        <h3><i class="fas fa-comments"></i> Traveler Experiences in Paris</h3>
+                        <div class="testimonial">
+                            <div class="testimonial-avatar">SD</div>
+                            <div class="testimonial-content">
+                                <p class="testimonial-text">"The evening cruise on the Seine was magical! Seeing the Eiffel Tower sparkle at night was unforgettable."</p>
+                                <div class="testimonial-author">Sarah Davis</div>
+                                <div class="testimonial-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="testimonial">
+                            <div class="testimonial-avatar">TW</div>
+                            <div class="testimonial-content">
+                                <p class="testimonial-text">"The Louvre exceeded all expectations. We spent two full days there and still didn't see everything!"</p>
+                                <div class="testimonial-author">Thomas Wilson</div>
+                                <div class="testimonial-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tokyo Section -->
+            <div id="tokyo" class="blog-section">
+                <h2><i class="fas fa-torii-gate"></i> Tokyo - The Metropolis of Contrasts</h2>
+                <div class="blog-image-placeholder" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); height: 300px; border-radius: 10px; display: flex; justify-content: center; align-items: center; margin-bottom: 1rem; color: white; font-size: 1.5rem;">
+                    <span>Shibuya Crossing & Tokyo Skyline</span>
+                </div>
+                <div class="blog-text">
+                    <p>Tokyo, Japan's bustling capital, mixes the ultramodern and the traditional, from neon-lit skyscrapers to historic temples. The opulent Meiji Shinto Shrine is known for its towering gate and surrounding woods.</p>
+                    <p>The Imperial Palace sits amid large public gardens. The city's many museums offer exhibits ranging from classical art to a reconstructed kabuki theater.</p>
+                    
+                    <div class="testimonials">
+                        <h3><i class="fas fa-comments"></i> Traveler Experiences in Tokyo</h3>
+                        <div class="testimonial">
+                            <div class="testimonial-avatar">KL</div>
+                            <div class="testimonial-content">
+                                <p class="testimonial-text">"The attention to detail in Japanese culture is incredible. From food presentation to garden design, everything is meticulous."</p>
+                                <div class="testimonial-author">Kevin Lee</div>
+                                <div class="testimonial-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="testimonial">
+                            <div class="testimonial-avatar">MJ</div>
+                            <div class="testimonial-content">
+                                <p class="testimonial-text">"Shibuya Crossing is even more impressive in person. The energy of Tokyo is unlike anywhere else I've been."</p>
+                                <div class="testimonial-author">Maria Johnson</div>
+                                <div class="testimonial-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Rome Section -->
+            <div id="rome" class="blog-section">
+                <h2><i class="fas fa-monument"></i> Rome - The Eternal City</h2>
+                <div class="blog-image-placeholder" style="background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%); height: 300px; border-radius: 10px; display: flex; justify-content: center; align-items: center; margin-bottom: 1rem; color: white; font-size: 1.5rem;">
+                    <span>Colosseum & Roman Forum</span>
+                </div>
+                <div class="blog-text">
+                    <p>Rome is the capital city of Italy. It is also the capital of the Lazio region, the centre of the Metropolitan City of Rome, and a special comune named Comune di Roma Capitale.</p>
+                    <p>Rome's history spans 28 centuries. While Roman mythology dates the founding of Rome at around 753 BC, the site has been inhabited for much longer, making it one of the oldest continuously occupied sites in Europe.</p>
+                    
+                    <div class="testimonials">
+                        <h3><i class="fas fa-comments"></i> Traveler Experiences in Rome</h3>
+                        <div class="testimonial">
+                            <div class="testimonial-avatar">AB</div>
+                            <div class="testimonial-content">
+                                <p class="testimonial-text">"Walking through the Colosseum felt like stepping back in time. The history in Rome is absolutely breathtaking."</p>
+                                <div class="testimonial-author">Alessandro Bianchi</div>
+                                <div class="testimonial-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="testimonial">
+                            <div class="testimonial-avatar">RG</div>
+                            <div class="testimonial-content">
+                                <p class="testimonial-text">"The food in Rome was incredible! From authentic pasta to the best gelato I've ever tasted."</p>
+                                <div class="testimonial-author">Rachel Green</div>
+                                <div class="testimonial-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bali Section -->
+            <div id="bali" class="blog-section">
+                <h2><i class="fas fa-umbrella-beach"></i> Bali - Island of the Gods</h2>
+                <div class="blog-image-placeholder" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); height: 300px; border-radius: 10px; display: flex; justify-content: center; align-items: center; margin-bottom: 1rem; color: white; font-size: 1.5rem;">
+                    <span>Rice Terraces & Beach Temples</span>
+                </div>
+                <div class="blog-text">
+                    <p>Bali is a province of Indonesia and the westernmost of the Lesser Sunda Islands. East of Java and west of Lombok, the province includes the island of Bali and a few smaller neighbouring islands.</p>
+                    <p>Bali is the only Hindu-majority province in Indonesia, with 86.9% of the population adhering to Balinese Hinduism. It is renowned for its highly developed arts, including traditional and modern dance, sculpture, painting, leather, metalworking, and music.</p>
+                    
+                    <div class="testimonials">
+                        <h3><i class="fas fa-comments"></i> Traveler Experiences in Bali</h3>
+                        <div class="testimonial">
+                            <div class="testimonial-avatar">SW</div>
+                            <div class="testimonial-content">
+                                <p class="testimonial-text">"Bali's spiritual energy is palpable. The temples and ceremonies provided such a profound cultural experience."</p>
+                                <div class="testimonial-author">Sophie Williams</div>
+                                <div class="testimonial-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="testimonial">
+                            <div class="testimonial-avatar">JM</div>
+                            <div class="testimonial-content">
+                                <p class="testimonial-text">"The beaches in Bali are paradise! We enjoyed both the popular spots and hidden gems away from the crowds."</p>
+                                <div class="testimonial-author">James Miller</div>
+                                <div class="testimonial-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- New York Section -->
+            <div id="newyork" class="blog-section">
+                <h2><i class="fas fa-city"></i> New York - The Big Apple</h2>
+                <div class="blog-image-placeholder" style="background: linear-gradient(135deg, #434343 0%, #000000 100%); height: 300px; border-radius: 10px; display: flex; justify-content: center; align-items: center; margin-bottom: 1rem; color: white; font-size: 1.5rem;">
+                    <span>Manhattan Skyline & Central Park</span>
+                </div>
+                <div class="blog-text">
+                    <p>New York City comprises 5 boroughs sitting where the Hudson River meets the Atlantic Ocean. At its core is Manhattan, a densely populated borough that's among the world's major commercial, financial and cultural centers.</p>
+                    <p>Its iconic sites include skyscrapers such as the Empire State Building and sprawling Central Park. Broadway theater is staged in neon-lit Times Square.</p>
+                    
+                    <div class="testimonials">
+                        <h3><i class="fas fa-comments"></i> Traveler Experiences in New York</h3>
+                        <div class="testimonial">
+                            <div class="testimonial-avatar">DT</div>
+                            <div class="testimonial-content">
+                                <p class="testimonial-text">"Seeing a Broadway show was the highlight of our trip. The energy of Times Square is absolutely electric!"</p>
+                                <div class="testimonial-author">David Thompson</div>
+                                <div class="testimonial-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="testimonial">
+                            <div class="testimonial-avatar">LC</div>
+                            <div class="testimonial-content">
+                                <p class="testimonial-text">"Central Park is an oasis in the middle of the concrete jungle. We spent hours exploring its hidden corners."</p>
+                                <div class="testimonial-author">Lisa Chen</div>
+                                <div class="testimonial-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-2">
+            <button id="toPage3"><i class="fas fa-calculator"></i> Plan Your Trip</button>
+        </div>
+    </div>
+    
+    <!-- Page 3: Trip Calculator -->
+    <div id="page3" class="page">
+        <header>
+            <div class="header-content">
+                <h1><i class="fas fa-globe-americas"></i> VoyageFlow</h1>
+                <p class="tagline">Customize Your Travel Experience</p>
+            </div>
+        </header>
+        
+        <div class="option-section">
+            <h3><i class="fas fa-plane"></i> Travel Options</h3>
+            <div class="option-item">
+                <div class="option-info">
+                    <div class="option-icon">
+                        <i class="fas fa-chair"></i>
+                    </div>
+                    <div class="option-details">
+                        <h4>Economy Flight</h4>
+                        <p>Comfortable seating with standard amenities</p>
+                    </div>
+                </div>
+                <div class="option-select">
+                    <input type="checkbox" id="economyFlight" data-price="500">
+                    <span class="option-price">$500</span>
+                </div>
+            </div>
+            <div class="option-item">
+                <div class="option-info">
+                    <div class="option-icon">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <div class="option-details">
+                        <h4>Business Class</h4>
+                        <p>Priority boarding, extra legroom, premium dining</p>
+                    </div>
+                </div>
+                <div class="option-select">
+                    <input type="checkbox" id="businessFlight" data-price="1200">
+                    <span class="option-price">$1200</span>
+                </div>
+            </div>
+            <div class="option-item">
+                <div class="option-info">
+                    <div class="option-icon">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <div class="option-details">
+                        <h4>First Class</h4>
+                        <p>Luxury experience with lie-flat seats and premium service</p>
+                    </div>
+                </div>
+                <div class="option-select">
+                    <input type="checkbox" id="firstClassFlight" data-price="2500">
+                    <span class="option-price">$2500</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="option-section">
+            <h3><i class="fas fa-hotel"></i> Accommodation</h3>
+            <div class="option-item">
+                <div class="option-info">
+                    <div class="option-icon">
+                        <i class="fas fa-bed"></i>
+                    </div>
+                    <div class="option-details">
+                        <h4>Budget Hotel</h4>
+                        <p>Comfortable stay with essential amenities (7 nights)</p>
+                    </div>
+                </div>
+                <div class="option-select">
+                    <input type="checkbox" id="budgetHotel" data-price="800">
+                    <span class="option-price">$800</span>
+                </div>
+            </div>
+            <div class="option-item">
+                <div class="option-info">
+                    <div class="option-icon">
+                        <i class="fas fa-swimming-pool"></i>
+                    </div>
+                    <div class="option-details">
+                        <h4>Luxury Resort</h4>
+                        <p>Premium accommodation with spa and pool (7 nights)</p>
+                    </div>
+                </div>
+                <div class="option-select">
+                    <input type="checkbox" id="luxuryHotel" data-price="2000">
+                    <span class="option-price">$2000</span>
+                </div>
+            </div>
+            <div class="option-item">
+                <div class="option-info">
+                    <div class="option-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <div class="option-details">
+                        <h4>Vacation Rental</h4>
+                        <p>Private apartment or villa with kitchen (7 nights)</p>
+                    </div>
+                </div>
+                <div class="option-select">
+                    <input type="checkbox" id="vacationRental" data-price="1500">
+                    <span class="option-price">$1500</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="option-section">
+            <h3><i class="fas fa-utensils"></i> Food Packages</h3>
+            <div class="option-item">
+                <div class="option-info">
+                    <div class="option-icon">
+                        <i class="fas fa-concierge-bell"></i>
+                    </div>
+                    <div class="option-details">
+                        <h4>Basic Meals</h4>
+                        <p>Daily breakfast and simple lunch options</p>
+                    </div>
+                </div>
+                <div class="option-select">
+                    <input type="checkbox" id="basicMeals" data-price="300">
+                    <span class="option-price">$300</span>
+                </div>
+            </div>
+            <div class="option-item">
+                <div class="option-info">
+                    <div class="option-icon">
+                        <i class="fas fa-utensil-spoon"></i>
+                    </div>
+                    <div class="option-details">
+                        <h4>Gourmet Dining</h4>
+                        <p>Fine dining experiences at top local restaurants</p>
+                    </div>
+                </div>
+                <div class="option-select">
+                    <input type="checkbox" id="gourmetDining" data-price="700">
+                    <span class="option-price">$700</span>
+                </div>
+            </div>
+            <div class="option-item">
+                <div class="option-info">
+                    <div class="option-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <div class="option-details">
+                        <h4>Food Tour</h4>
+                        <p>Guided culinary tour of local specialties</p>
+                    </div>
+                </div>
+                <div class="option-select">
+                    <input type="checkbox" id="foodTour" data-price="250">
+                    <span class="option-price">$250</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="option-section">
+            <h3><i class="fas fa-hiking"></i> Activities</h3>
+            <div class="option-item">
+                <div class="option-info">
+                    <div class="option-icon">
+                        <i class="fas fa-bus"></i>
+                    </div>
+                    <div class="option-details">
+                        <h4>City Tour</h4>
+                        <p>Guided sightseeing tour of major attractions</p>
+                    </div>
+                </div>
+                <div class="option-select">
+                    <input type="checkbox" id="cityTour" data-price="100">
+                    <span class="option-price">$100</span>
+                </div>
+            </div>
+            <div class="option-item">
+                <div class="option-info">
+                    <div class="option-icon">
+                        <i class="fas fa-mountain"></i>
+                    </div>
+                    <div class="option-details">
+                        <h4>Adventure Package</h4>
+                        <p>Thrilling outdoor activities and excursions</p>
+                    </div>
+                </div>
+                <div class="option-select">
+                    <input type="checkbox" id="adventurePackage" data-price="350">
+                    <span class="option-price">$350</span>
+                </div>
+            </div>
+            <div class="option-item">
+                <div class="option-info">
+                    <div class="option-icon">
+                        <i class="fas fa-theater-masks"></i>
+                    </div>
+                    <div class="option-details">
+                        <h4>Cultural Experience</h4>
+                        <p>Traditional performances and cultural workshops</p>
+                    </div>
+                </div>
+                <div class="option-select">
+                    <input type="checkbox" id="culturalExperience" data-price="200">
+                    <span class="option-price">$200</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="price-display">
+            Total Estimated Cost: $<span id="totalPrice">0</span>
+        </div>
+        
+        <div class="text-center">
+            <button id="confirmTrip"><i class="fas fa-check-circle"></i> Confirm Trip</button>
+        </div>
+        
+        <!-- Reviews on Calculator Page -->
+        <div class="review-section mt-2">
+            <h3>Travelers Love Our Customizable Packages</h3>
+            <div class="reviews-grid">
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer">
+                            <div class="reviewer-avatar">RG</div>
+                            <div class="reviewer-info">
+                                <h4>Robert Green</h4>
+                                <p>Budget Traveler</p>
+                            </div>
+                        </div>
+                        <div class="review-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <p class="review-text">"Being able to customize each aspect of my trip helped me stay within my budget while still having an amazing experience."</p>
+                </div>
+                
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer">
+                            <div class="reviewer-avatar">LW</div>
+                            <div class="reviewer-info">
+                                <h4>Lisa Wong</h4>
+                                <p>Luxury Traveler</p>
+                            </div>
+                        </div>
+                        <div class="review-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                    </div>
+                    <p class="review-text">"The premium options were exactly what I was looking for. The first-class flight and luxury hotel made my vacation unforgettable."</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Page 4: Confirmation -->
+    <div id="page4" class="page">
+        <header>
+            <div class="header-content">
+                <h1><i class="fas fa-globe-americas"></i> VoyageFlow</h1>
+                <p class="tagline">Your Adventure Awaits</p>
+            </div>
+        </header>
+        
+        <div class="confirmation-content">
+            <div class="confirmation-icon"><i class="fas fa-check-circle"></i></div>
+            <h2>Booking Confirmed!</h2>
+            <p>Thank you for choosing VoyageFlow for your travel planning. Your simulated booking has been successfully completed.</p>
+            <p>We hope you have an amazing journey and create unforgettable memories!</p>
+            <button id="startOver" class="mt-2"><i class="fas fa-redo"></i> Start Over</button>
+        </div>
+        
+        <!-- Final Reviews Section -->
+        <div class="review-section mt-2">
+            <h3>Join Thousands of Satisfied Travelers</h3>
+            <div class="reviews-grid">
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer">
+                            <div class="reviewer-avatar">ES</div>
+                            <div class="reviewer-info">
+                                <h4>Emma Stevens</h4>
+                                <p>Frequent Traveler</p>
+                            </div>
+                        </div>
+                        <div class="review-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <p class="review-text">"I've used VoyageFlow for three trips now, and each one has been perfectly planned. The attention to detail is remarkable."</p>
+                </div>
+                
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer">
+                            <div class="reviewer-avatar">DC</div>
+                            <div class="reviewer-info">
+                                <h4>David Chen</h4>
+                                <p>Business Traveler</p>
+                            </div>
+                        </div>
+                        <div class="review-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                    </div>
+                    <p class="review-text">"As someone who travels frequently for work, VoyageFlow saves me so much time while ensuring I get the best value."</p>
+                </div>
+                
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer">
+                            <div class="reviewer-avatar">NK</div>
+                            <div class="reviewer-info">
+                                <h4>Natalie Kim</h4>
+                                <p>Honeymooner</p>
+                            </div>
+                        </div>
+                        <div class="review-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <p class="review-text">"Our honeymoon was absolutely perfect thanks to VoyageFlow. Every detail was taken care of, allowing us to just enjoy our special time."</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <h2><i class="fas fa-check-circle" style="color: var(--success);"></i> Registration Successful!</h2>
+            <p>Your account has been created successfully. You're now being redirected to explore amazing destinations.</p>
+            <button id="modalOk">Continue to Destinations</button>
+        </div>
+    </div>
+    
+    <!-- Trip Confirmation Modal -->
+    <div id="tripModal" class="modal">
+        <div class="modal-content">
+            <h2><i class="fas fa-check-circle" style="color: var(--success);"></i> Trip Confirmed!</h2>
+            <p>Your travel package has been successfully customized. Total cost: $<span id="modalTotal">0</span></p>
+            <p>You're now being redirected to the confirmation page.</p>
+            <button id="tripModalOk">View Confirmation</button>
+        </div>
+    </div>
+
+    <script>
+        // Page Navigation
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+            
+            // Scroll to top when changing pages
+            window.scrollTo(0, 0);
+        }
+        
+        // Page 1: Registration Form Validation
+        document.getElementById('registrationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email');
+            const phone = document.getElementById('phone');
+            const pincode = document.getElementById('pincode');
+            
+            let isValid = true;
+            
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email.value)) {
+                document.getElementById('emailError').style.display = 'block';
+                email.classList.add('error');
+                isValid = false;
+            } else {
+                document.getElementById('emailError').style.display = 'none';
+                email.classList.remove('error');
+            }
+            
+            // Phone validation (exactly 10 digits)
+            const phoneRegex = /^\d{10}$/;
+            if (!phoneRegex.test(phone.value)) {
+                document.getElementById('phoneError').style.display = 'block';
+                phone.classList.add('error');
+                isValid = false;
+            } else {
+                document.getElementById('phoneError').style.display = 'none';
+                phone.classList.remove('error');
+            }
+            
+            // PIN Code validation (exactly 6 digits)
+            const pincodeRegex = /^\d{6}$/;
+            if (!pincodeRegex.test(pincode.value)) {
+                document.getElementById('pincodeError').style.display = 'block';
+                pincode.classList.add('error');
+                isValid = false;
+            } else {
+                document.getElementById('pincodeError').style.display = 'none';
+                pincode.classList.remove('error');
+            }
+            
+            if (isValid) {
+                document.getElementById('successModal').style.display = 'flex';
+            }
+        });
+        
+        // Page 2: Smooth Scrolling Navigation
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const targetElement = document.getElementById(targetId);
+                
+                // Update active tab
+                document.querySelectorAll('.nav-tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // Smooth scroll to section
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            });
+        });
+        
+        // Page 3: Price Calculator
+        function calculateTotal() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            let total = 0;
+            
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    total += parseInt(checkbox.getAttribute('data-price'));
+                }
+            });
+            
+            document.getElementById('totalPrice').textContent = total;
+        }
+        
+        // Add event listeners to all checkboxes
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', calculateTotal);
+        });
+        
+        // Modal and Navigation Event Listeners
+        document.getElementById('modalOk').addEventListener('click', function() {
+            document.getElementById('successModal').style.display = 'none';
+            showPage('page2');
+        });
+        
+        document.getElementById('toPage3').addEventListener('click', function() {
+            showPage('page3');
+        });
+        
+        document.getElementById('confirmTrip').addEventListener('click', function() {
+            const total = document.getElementById('totalPrice').textContent;
+            document.getElementById('modalTotal').textContent = total;
+            document.getElementById('tripModal').style.display = 'flex';
+        });
+        
+        document.getElementById('tripModalOk').addEventListener('click', function() {
+            document.getElementById('tripModal').style.display = 'none';
+            showPage('page4');
+        });
+        
+        document.getElementById('startOver').addEventListener('click', function() {
+            // Reset form and selections
+            document.getElementById('registrationForm').reset();
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            document.getElementById('totalPrice').textContent = '0';
+            
+            showPage('page1');
+        });
+    </script>
+</body>
+</html>
